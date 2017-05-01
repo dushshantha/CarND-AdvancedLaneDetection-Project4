@@ -91,12 +91,21 @@ vertices = np.array([[(int(src[0][0]) - 20 , int(src[0][1])), (int(src[1][0]) - 
 ```
  Example images below shows the original Grayscale image and the gradient thresholded image with the mask.
  
- Grayscale                   |  grdient thresholded
+ Grayscale                   |  Gradient thresholded
 :---------------------------:|:-------------------------:
 ![alt text][image8]          |  ![alt text][image9]
 
 
 * Color Threashold on S layer
+
+In this 2nd step of thresholding, I apply a threashold of 175 - 255 on the S layer image from step 2 above. Here I use a function called apply_binary_threshold(s, thresh=(0, 255))) ( Lines 193 - 196 in AdvancedLaneDetection.py). This function will get an image and apply a threshold and return the binary image. I also apply the same mask for the resulting image in this step as well. Example images below shows the S layer and the threshoded image.
+
+S Layer                      |  Color Thresholded
+:---------------------------:|:-------------------------:
+![alt text][image10]         |  ![alt text][image11]
+
+* Combine the 2 thresholds
+
 
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
