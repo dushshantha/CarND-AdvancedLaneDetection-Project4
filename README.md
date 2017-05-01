@@ -50,12 +50,35 @@ The Calibration data is saved in wide_dist_pickle.p file and this data can be lo
 
 ### Pipeline (single images)
 
-#### 1. Provide an example of a distortion-corrected image.
+#### 1. Undistort the image
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+In the first step pf the pipeline, I use the Camera Calibration data the I originally saved to undistprt the image. I use the function undistortImage(img, mtx, dist) (Lines 182 - 184 in AdvancedLaneDetection.py) to apply the undistortion. 
+Below is a example of this function applied to one of the test images. 
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+Original
+![alt text][image3]
+
+Undistorted
+![alt text][image4]
+
+#### 2. Covert the image to Grayscale and HLS
+
+In this step, I converted the undistorted image from step 1 to Grayscale and HLS using the helper function grayscale ( Lines 61 - 63 in AdvancedLaneDetection.py) and convertHLS ( Lines 65 - 67 in AdvancedLaneDetection.py). I then used the helpter funtion getSLayer (Lines 69 - 70 in AdvancedLaneDetection.py) to extract the S layer from the HLS converted image. 
+
+Below are these convertions applied to the test image above.
+
+Grayscale
+![alt text][image5]
+
+HLS 
+![alt text][image6]
+
+S Layer of HLS
+![alt text][image7]
+
+#### 3. Apply Gradient thresholds
+
+In the 3rd step I experiented with many different combinations of Gradient thresholds applied to the images from the last step. 
 
 I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
 
