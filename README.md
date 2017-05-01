@@ -106,23 +106,28 @@ S Layer                      |  Color Thresholded
 
 * Combine the 2 thresholds
 
+As the final stage of this step, I combine the color and gradient thresholds to get the final thresholded image. 
+
+Below example shows the result of this step.
+
+![alt text][image12]
 
 
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
+#### 4. Perspective Transformation
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+The next step in the pipeline is to perform the perspective transformation on the binary image from the previos step. The goal of this transformation is to get a bird's eye view of the lanes so we can identify any curvature of the lane lines. 
+
+To perform this, I first find 4 source points of the source image that roughly covers the lanes. I use get_transform_points(img) function ( Lines 243 - 256 in  AdvancedLaneDetection.py). This function takes the image in to get the dimentions and calculate 4 points where the lane lines can most likely be located. Below lines of code shows how I come up with th points.
 
 ```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+src = np.float32([[int(imshape[1] * 0.10) - 20, imshape[0]], 
+                  [int(imshape[1] * 0.50) - 55, int(imshape[0] * 0.6)+ 20],
+                  [int(imshape[1] * 0.55) + 45 , int(imshape[0] * 0.6) + 20 ],
+                  [imshape[1] * .95 + 20, imshape[0]]])
+    dst = np.float32([[int(imshape[1] * 0.20), imshape[0]], 
+                     [int(imshape[1] * 0.20), 0],
+                     [int(imshape[1] * 0.75), 0],
+                     [int(imshape[1] * 0.75), imshape[0]]])
 ```
 
 This resulted in the following source and destination points:
@@ -136,31 +141,39 @@ This resulted in the following source and destination points:
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![alt text][image4]
+Original                     |  Tansformed
+:---------------------------:|:-------------------------:
+![alt text][image12]         |  ![alt text][image13]
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+Then I use perspective_trans(img, src, dst) function (lines 186 - 191 in AdvancedLaneDetection.py) to perform the perspective Transformation.  Below exaple images show the before and after the transformation. 
 
-![alt text][image5]
+S Layer                      |  Color Thresholded
+:---------------------------:|:-------------------------:
+![alt text][image14]         |  ![alt text][image15]
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+#### 5. Sliding Window, Curvature and deviation from the center
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+I used the Sliding Window method described in  the lessons to identify the lane lines. This is implemented in the function sliding_windows(binary_warped) (Lines 287 - 371 in AdvancedLaneDetection.py). This takes the warped binary image from previous step and look for the lane lines using highest points in a histogram. this generates a series of X coordinated for left and riht lines. This function also uses return_Curvature(left_fitx, right_fitx, ploty, image_size) function( Lines 24 - 284) that uses the x ccordinate points to calculate the curvature and the deviation of the vehicle from the center of the road. 
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I also uses a class called Line to save the data from above function for each image so i can skip the blind search where there is a lane detected in the previous frame. In this case I use skip_sliding_windows(binary_warped) function ( Lines 375 - 428) to look at the 100 pixel area from the last line detcted. This increase the performance of the algorythm significantly. 
 
-![alt text][image6]
+
+#### 6. Draw the lane lines on the original image
+
+In thislast step of the pipelne, I use an copy of the original undistorted image, apply perspectie transformation, draw the lines using the X coordinate points obtained from the previous step and reverse the perspective transformation to the original. I do this using the function draw_on_original_image(orig_undist, left_fitx, right_fitx, ploty, s, d) ( Lines 431 - 447) 
+
+Below example shows the resulting image with the highlighted lane. 
+
+![alt text][image16]
 
 ---
 
 ### Pipeline (video)
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+The process_image(image) function ( Lines 450 - 509) organizes all the steps i mentioned in the previous section in to a function and used to process every frame of the video. Below is the link to the resulting Video.
 
-Here's a [link to my video result](./project_video.mp4)
 
 ---
 
