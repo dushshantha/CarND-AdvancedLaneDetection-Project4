@@ -14,37 +14,39 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
+[image1]: ./images/imge1.png "Distorted"
+[image2]: ./images/imge2.png "Undistorted"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./examples/warped_straight_lines.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
 
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
+### [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+#### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
 
-### Writeup / README
+### Writeup / README  
 
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
-
-You're reading it!
+This README.md file will walk you through the process I followed in completing this project. The code for this project is in the form of a python script. This document will walk you throuhg the file AdvancedLaneDetection.py 
 
 ### Camera Calibration
 
-#### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
+I used OpenCV's findChessboardCorners and calibrateCamera functions for the Camera calibration in this project. I used the Chess Board images [provided](https://github.com/udacity/CarND-Advanced-Lane-Lines/tree/master/camera_cal) in the course to perform the calibration. 
 
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
+I created 2 functions to achieve this task. The first function calibration_points(filename, len_points, high_points) (lines 124 - 157 in AdvancedLaneDetection.py) till read the images from the given location and return 2 arrays for 3d points in real world space (object points) and 2d points in image plane ( image points). The function accepts the image location and number of inner points in the chess board used for the images. In our case, Its a 9 x 6 chess board. 
 
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
+I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  TThen I use cv2.findChessboardCorners function to detect the image points. This function returns the distorted points on each image. `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+I then used the output objpoints and imgpoints to compute the camera calibration and distortion coefficients in calibrate_cam(img_name, objpoints, imgpoints, filename) functin (lines 160 - 171 in AdvancedLaneDetection.py). This function will accept a image of a distorted chess board, obj and img points returned from the previous function and a file name to save the calibration matrix for future use. This function uses the cv2.calibrateCamera() function to calibrate the camera.  
 
-![alt text][image1]
+The function undistortImage(img, mtx, dist) (Lines 182 - 184 in AdvancedLaneDetection.py) uses cv2.undistort() to use the calibration matrix returned by the above mentioned function to apply the undistortion to the image. Below examples show a chess board image before and after the undistortion applied using the calibration matrix. 
+
+![alt text][image1] ![alt text][image2]
+
+The Calibration data is saved in wide_dist_pickle.p file and this data can be loaded to undistort the images in the pipeline without having to recalibrate in every step. 
 
 ### Pipeline (single images)
 
