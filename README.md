@@ -79,9 +79,24 @@ Grayscale                     |HLS                        |S Layer of HLS
 
 In the 3rd step I experiented with many different combinations of color and Gradient thresholds applied to the images from the last step. 
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+* X directional Gradient on Grayscale
+In this step, I used X directional Sobel gradient on the Grascale image from the previous step. I then coverted the resulting image to a binary image with thethreshold 20 - 100. The function abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)) ( Lines 198 -213 in AdvancedLaneDetection.py) accepts the grascale image, orienation, kernel size and threshold values and return a binary image with the gradient threashold applied. In my pipeline I used the kernel size 15. 
+I also applied a region mask to the resulting image to eliminate the distractions. For this, I used 2 functions. get_transform_points(img) (Lines 243 - 256 in  AdvancedLaneDetection.py) takes the image and returns source and destination points for perspective transformation. This function will be explained in detail later. I used the source points returned from this function to create 4 vertices for the mask. Then I used the function region_of_interest(img, vertices) (Lines 90 -106 in AdvancedLaneDetection.py) to return a masked image with only the pixels belonging to themasked area. I added extra padding to the original Source points when I created the vertices to include the entire lane lines without cutting it off. Below python code shows the creation of Vertices.
 
-![alt text][image3]
+```python
+vertices = np.array([[(int(src[0][0]) - 20 , int(src[0][1])), (int(src[1][0]) - 15 , int(src[1][1])),
+                          (int(src[2][0]), int(src[2][1]) + 15 ), (int(src[3][0]) + 20, int(src[3][1]))]],
+                        dtype=np.int32)
+```
+ Example images below shows the original Grayscale image and the gradient thresholded image with the mask.
+ 
+ Grayscale                   |  grdient thresholded
+:---------------------------:|:-------------------------:
+![alt text][image8]          |  ![alt text][image9]
+
+
+* Color Threashold on S layer
+
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
