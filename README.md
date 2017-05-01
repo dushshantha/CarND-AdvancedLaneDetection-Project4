@@ -44,7 +44,11 @@ I then used the output objpoints and imgpoints to compute the camera calibration
 
 The function undistortImage(img, mtx, dist) (Lines 182 - 184 in AdvancedLaneDetection.py) uses cv2.undistort() to use the calibration matrix returned by the above mentioned function to apply the undistortion to the image. Below examples show a chess board image before and after the undistortion applied using the calibration matrix. 
 
-![alt text][image1] ![alt text][image2]
+Distorted                     |  Undistorted
+:----------------------------:|:-------------------------:
+![alt text][image1]           |  ![alt text][image2]
+
+ 
 
 The Calibration data is saved in wide_dist_pickle.p file and this data can be loaded to undistort the images in the pipeline without having to recalibrate in every step. 
 
