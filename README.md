@@ -77,7 +77,7 @@ Grayscale                     |HLS                        |S Layer of HLS
 
 #### 3. Apply Gradient thresholds
 
-In the 3rd step I experiented with many different combinations of Gradient thresholds applied to the images from the last step. 
+In the 3rd step I experiented with many different combinations of color and Gradient thresholds applied to the images from the last step. 
 
 I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
 
