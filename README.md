@@ -70,14 +70,10 @@ In this step, I converted the undistorted image from step 1 to Grayscale and HLS
 
 Below are these convertions applied to the test image above.
 
-Grayscale
-![alt text][image5]
+Grayscale                     |HLS                        |S Layer of HLS
+:----------------------------:|:-------------------------:|:-------------------------:
+![alt text][image5]           |  ![alt text][image6]      | ![alt text][image7]
 
-HLS 
-![alt text][image6]
-
-S Layer of HLS
-![alt text][image7]
 
 #### 3. Apply Gradient thresholds
 
