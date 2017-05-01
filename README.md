@@ -17,10 +17,10 @@ The goals / steps of this project are the following:
 [image1]: ./images/image1.png "Distorted"
 [image2]: ./images/image2.png "Undistorted"
 [image3]: ./images/image3.png "Original"
-[image4]: ./images/image3.png "Undistorted"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[image4]: ./images/image4.png "Undistorted"
+[image5]: ./images/image5.png "Grayscale"
+[image6]: ./images/image6.png "HLS"
+[video1]: ./images/image7.png "S Layer"
 
 ### [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
