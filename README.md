@@ -20,7 +20,7 @@ The goals / steps of this project are the following:
 [image4]: ./images/image4.png "Undistorted"
 [image5]: ./images/image5.png "Grayscale"
 [image6]: ./images/image6.png "HLS"
-[video1]: ./images/image7.png "S Layer"
+[image7]: ./images/image7.png "S Layer"
 
 ### [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
