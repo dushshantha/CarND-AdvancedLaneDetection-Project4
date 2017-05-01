@@ -60,8 +60,8 @@ In the first step pf the pipeline, I use the Camera Calibration data the I origi
 Below is a example of this function applied to one of the test images. 
 
 Original                     |  Undistorted
-:----------------------------:|:-------------------------:
-![alt text][image3]           |  ![alt text][image4]
+:---------------------------:|:-------------------------:
+![alt text][image3]          |  ![alt text][image4]
 
 
 #### 2. Covert the image to Grayscale and HLS
