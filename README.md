@@ -59,11 +59,10 @@ The Calibration data is saved in wide_dist_pickle.p file and this data can be lo
 In the first step pf the pipeline, I use the Camera Calibration data the I originally saved to undistprt the image. I use the function undistortImage(img, mtx, dist) (Lines 182 - 184 in AdvancedLaneDetection.py) to apply the undistortion. 
 Below is a example of this function applied to one of the test images. 
 
-Original
-![alt text][image3]
+Original                     |  Undistorted
+:----------------------------:|:-------------------------:
+![alt text][image3]           |  ![alt text][image4]
 
-Undistorted
-![alt text][image4]
 
 #### 2. Covert the image to Grayscale and HLS
 
