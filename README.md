@@ -143,14 +143,14 @@ I verified that my perspective transform was working as expected by drawing the 
 
 Original                     |  Tansformed
 :---------------------------:|:-------------------------:
-![alt text][image12]         |  ![alt text][image13]
+![alt text][image13]         |  ![alt text][image14]
 
 
 Then I use perspective_trans(img, src, dst) function (lines 186 - 191 in AdvancedLaneDetection.py) to perform the perspective Transformation.  Below exaple images show the before and after the transformation. 
 
-S Layer                      |  Color Thresholded
+Before                       |  After
 :---------------------------:|:-------------------------:
-![alt text][image14]         |  ![alt text][image15]
+![alt text][image15]         |  ![alt text][image16]
 
 
 #### 5. Sliding Window, Curvature and deviation from the center
@@ -166,7 +166,7 @@ In thislast step of the pipelne, I use an copy of the original undistorted image
 
 Below example shows the resulting image with the highlighted lane. 
 
-![alt text][image16]
+![alt text][image17]
 
 ---
 
