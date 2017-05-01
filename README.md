@@ -72,7 +72,7 @@ Below are these convertions applied to the test image above.
 
 Grayscale                     |HLS                        |S Layer of HLS
 :----------------------------:|:-------------------------:|:-------------------------:
-![alt text][image5]           |  ![alt text][image6]      | ![alt text][image7]
+![alt text][image5]           |![alt text][image6]        | ![alt text][image7]
 
 
 #### 3. Apply Gradient thresholds
@@ -80,6 +80,7 @@ Grayscale                     |HLS                        |S Layer of HLS
 In the 3rd step I experiented with many different combinations of color and Gradient thresholds applied to the images from the last step. 
 
 * X directional Gradient on Grayscale
+
 In this step, I used X directional Sobel gradient on the Grascale image from the previous step. I then coverted the resulting image to a binary image with thethreshold 20 - 100. The function abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)) ( Lines 198 -213 in AdvancedLaneDetection.py) accepts the grascale image, orienation, kernel size and threshold values and return a binary image with the gradient threashold applied. In my pipeline I used the kernel size 15. 
 I also applied a region mask to the resulting image to eliminate the distractions. For this, I used 2 functions. get_transform_points(img) (Lines 243 - 256 in  AdvancedLaneDetection.py) takes the image and returns source and destination points for perspective transformation. This function will be explained in detail later. I used the source points returned from this function to create 4 vertices for the mask. Then I used the function region_of_interest(img, vertices) (Lines 90 -106 in AdvancedLaneDetection.py) to return a masked image with only the pixels belonging to themasked area. I added extra padding to the original Source points when I created the vertices to include the entire lane lines without cutting it off. Below python code shows the creation of Vertices.
 
