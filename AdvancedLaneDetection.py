@@ -20,7 +20,7 @@ class Line():
         # Polinomial coeffidients of the last n iterations
         self.recent_fit = deque(maxlen=10)
         #polynomial coefficients for the most recent fit
-        self.current_fit = [np.array([False])]
+        self.current_fit = None
         #radius of curvature of the line in some units
         self.radius_of_curvature = None
         #distance in meters of vehicle center from the line
@@ -82,7 +82,7 @@ def print_Image(img, heading):
 
 
 def saveImage(img, filename):
-    plt.imshow(img)
+    plt.imshow(img, cmap='gray')
     plt.savefig(filename)
     #os.listdir("test_images/")
 
@@ -248,8 +248,9 @@ def get_transform_points(img):
     dst = np.float32([[0, 0], [1280, 0],
                       [1250, 720], [40, 720]])
     '''
-    src = np.float32([[int(imshape[1] * 0.10) - 20, imshape[0]], [int(imshape[1] * 0.50) - 55, int(imshape[0] * 0.6)+ 20],
-                      [int(imshape[1] * 0.55) + 45 , int(imshape[0] * 0.6) + 20 ], [imshape[1] * .95 + 20, imshape[0]]])
+    src = np.float32(
+        [[int(imshape[1] * 0.10) - 20, imshape[0]], [int(imshape[1] * 0.50) - 55, int(imshape[0] * 0.6) + 20],
+         [int(imshape[1] * 0.55) + 45, int(imshape[0] * 0.6) + 20], [imshape[1] * .95 + 20, imshape[0]]])
     dst = np.float32([[int(imshape[1] * 0.20), imshape[0]], [int(imshape[1] * 0.20), 0],
                       [int(imshape[1] * 0.75), 0], [int(imshape[1] * 0.75), imshape[0]]])
 
@@ -262,7 +263,7 @@ def hist(img):
 
 
 def return_Curvature(left_fitx, right_fitx, ploty, image_size):
-    y_val = np.max(ploty)
+    y_val = np.max(ploty)/2
     ym_per_pix = 30 / 720  # meters per pixel in y dimension
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
     left_fit_cr = np.polyfit(ploty * ym_per_pix, left_fitx * xm_per_pix, 2)
@@ -354,11 +355,32 @@ def sliding_windows(binary_warped):
 
     # Fit a second order polynomial to each
     left_fit = np.polyfit(lefty, leftx, 2)
-    Left.current_fit = left_fit
-    Left.add_best_fit(left_fit)
+
+    # Check the similarities of the polygons
+
+    if Left.current_fit == None:
+        Left.current_fit = left_fit
+
+    ret = cv2.matchShapes(left_fit, Left.current_fit, 1, 0.0)
+    if ret < 0.045:
+        Left.add_best_fit(left_fit)
+        Left.current_fit = left_fit
+
+
+    left_fit = Left.best_fit
+
+
     right_fit = np.polyfit(righty, rightx, 2)
-    Right.current_fit = right_fit
-    Right.add_best_fit(right_fit)
+
+    if Right.current_fit == None:
+        Right.current_fit = right_fit
+
+    ret = cv2.matchShapes(right_fit, Right.current_fit, 1, 0.0)
+    if ret < 0.045:
+        Right.current_fit = right_fit
+        Right.add_best_fit(right_fit)
+
+    right_fit = Right.best_fit
 
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0] - 1, binary_warped.shape[0])
@@ -366,8 +388,6 @@ def sliding_windows(binary_warped):
     right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
 
     l_curv, r_curv, dev = return_Curvature(left_fitx, right_fitx, ploty, binary_warped.shape)
-    print(l_curv)
-    print(r_curv)
     return left_fitx, right_fitx, ploty, left_fit, right_fit, l_curv, r_curv, dev
 
 
@@ -428,7 +448,7 @@ def  skip_sliding_windows(binary_warped):
     return left_fitx, right_fitx, ploty
 
 
-def draw_on_original_image(orig_undist, left_fitx, right_fitx, ploty, s, d):
+def draw_on_original_image(orig_undist, left_fitx, right_fitx, ploty, s, d, left_radius, right_radius, lane_deviation):
     # Generate a polygon to illustrate the search window area
     # And recast the x and y points into usable format for cv2.fillPoly()
     left_line = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
@@ -444,11 +464,19 @@ def draw_on_original_image(orig_undist, left_fitx, right_fitx, ploty, s, d):
     unwarped = perspective_trans(new_image, d, s)
 
     result = cv2.addWeighted(orig_undist, 1, unwarped, 0.3, 0)
+
+    curvature_text = "Curvature: Left = " + str(np.round(left_radius, 2)) + ", Right = " + str(
+        np.round(right_radius, 2))
+    font = cv2.FONT_HERSHEY_COMPLEX
+    cv2.putText(result, curvature_text, (30, 60), font, 1, (0, 255, 0), 2)
+    deviation_text = "Lane deviation from center = {:.2f} m".format(lane_deviation)
+    font = cv2.FONT_HERSHEY_COMPLEX
+    cv2.putText(result, deviation_text, (30, 90), font, 1, (0, 255, 0), 2)
     return result
 
 
 def process_image(image):
-    ksize = 7
+    ksize = 15
     src, dst = get_transform_points(image)
     vertices = np.array([[(int(src[0][0]) - 20 , int(src[0][1])), (int(src[1][0]) - 15 , int(src[1][1])),
                           (int(src[2][0]), int(src[2][1]) + 15 ), (int(src[3][0]) + 20, int(src[3][1]))]],
@@ -466,6 +494,7 @@ def process_image(image):
     # Step 3: Apply Gradient Thresholding and S Change
     gradx = abs_sobel_thresh(gray, orient='x', sobel_kernel=ksize, thresh=(20, 100))
     gradx = region_of_interest(gradx, vertices)
+
     grady = abs_sobel_thresh(gray, orient='y', sobel_kernel=ksize, thresh=(20, 100))
     grady = region_of_interest(grady, vertices)
     mag_binary = mag_thresh(gray, sobel_kernel=ksize, mag_thresh=(20, 100))
@@ -482,11 +511,8 @@ def process_image(image):
     l_binary = region_of_interest(l_binary, vertices)
 
     # Combining the color and thresholds
-    combined = np.zeros_like(dir_binary)
-    combined[((gradx == 1) ) | ((mag_binary == 1) & (dir_binary == 1))] = 1
-
     color_combined = np.zeros_like(s_binary)
-    color_combined[(combined == 1) | ((s_binary == 1) & (l_binary == 1))] = 1
+    color_combined[(gradx == 1) | ((s_binary == 1))] = 1
 
     # Step 4: Perspective Transform
     transformed = perspective_trans(color_combined, src, dst)
@@ -505,20 +531,19 @@ def process_image(image):
     '''
     #left_fitx, right_fitx, ploty, radius_of_curvature, line_base_pos = for_sliding_window(transformed)
 
-    final = draw_on_original_image(undist, left_fitx, right_fitx, ploty, src, dst)
+    final = draw_on_original_image(undist, left_fitx, right_fitx, ploty, src, dst, l, r, d)
     return final
 
 
 def draw_lines(img, src):
-
-    # print(src)
+     # print(src)
     copy = np.copy(img)
     cv2.line(copy, tuple(src[0]), tuple(src[1]),color=[255, 0, 0], thickness = 3)
     cv2.line(copy, tuple(src[1]), tuple(src[2]),color=[255, 0, 0], thickness = 3)
     cv2.line(copy, tuple(src[2]), tuple(src[3]),color=[255, 0, 0], thickness = 3)
     cv2.line(copy, tuple(src[3]), tuple(src[0]),color=[255, 0, 0], thickness = 3)
     #print_Image(copy)
-
+    return copy
 
 
 
@@ -545,19 +570,11 @@ if __name__ == "__main__":
     print(mtx)
 
     # Undistort the image
-    img = read_image('camera_cal/calibration1.jpg')
-    saveImage(img,'images/image1.png')
+    img = read_image('test_images/test6.jpg')
+    saveImage(img,'images/image3.png')
     undist = undistortImage(img, mtx, dist)
     # print(undist.shape)
-    saveImage(undist, 'images/image2.png')
-
-    '''
-    # Undistort the image
-    img = read_image('test_images/test6.jpg')
-    undist = undistortImage(img, mtx, dist)
-    print_Image(undist, 'Original')
-    #print(undist.shape)
-    #saveImage(undist, 'undistorted_chess.jpg')
+    saveImage(undist, 'images/image4.png')
 
     src, dst = get_transform_points(undist)
     vertices = np.array([[(int(src[0][0]) - 20 , int(src[0][1])), (int(src[1][0]) - 15, int(src[1][1])),
@@ -567,64 +584,76 @@ if __name__ == "__main__":
     #print_Image(undist)
 
     gray = grayscale(undist)
-    s = getSLayer(convertHLS(undist))
-    print_Image(s, 'S Layer')
+    saveImage(gray, 'images/image5.png')
+    hls = convertHLS(undist)
+    saveImage(hls, 'images/image6.png')
+    s = getSLayer(hls)
+    saveImage(s, 'images/image7.png')
 
-    l = getLLayer(convertHLS(undist))
-    l_binary = apply_binary_threshold(l, (175,255))
-    l_binary = region_of_interest(l_binary, vertices)
-    print_Image(l_binary, 'L Layere Binary')
-
+    saveImage(gray, 'images/image8.png')
     gradx = abs_sobel_thresh(gray, orient='x', sobel_kernel=ksize, thresh=(20, 100))
     gradx = region_of_interest(gradx, vertices)
-    print_Image(gradx, 'Grad X')
-    grady = abs_sobel_thresh(l, orient='y', sobel_kernel=ksize, thresh=(10, 150))
-    grady = region_of_interest(grady, vertices)
-    print_Image(grady, 'Grad Y')
-    mag_binary = mag_thresh(l, sobel_kernel=ksize, mag_thresh=(20, 100))
-    mag_binary = region_of_interest(mag_binary, vertices)
-    print_Image(mag_binary, 'Mag Binary')
-    dir_binary = dir_threshold(gray, sobel_kernel=ksize, thresh=(0.7, np.pi / 2))
-    dir_binary = region_of_interest(dir_binary, vertices)
-    print_Image(dir_binary, 'Dir BInary')
+    saveImage(gradx, 'images/image9.png')
 
+    saveImage(s, 'images/image10.png')
     s_binary = apply_binary_threshold(s, (175,255))
     s_binary = region_of_interest(s_binary, vertices)
-    print_Image(s_binary, 'S Binary')
-
-    #Combining the color and thresholds
-    combined = np.zeros_like(s_binary)
-    combined[((gradx == 1)) | ((mag_binary == 1))] = 1
-
-    #print_Image(combined, 'Combined')
+    saveImage(s_binary, 'images/image11.png')
 
     color_combined = np.zeros_like(s_binary)
     color_combined[(gradx == 1) | ((s_binary == 1))] = 1
-    print_Image(color_combined, 'Color Combined')
+    saveImage(color_combined, 'images/image12.png')
 
-    #draw_lines(undist, src)
-    #tr_img = perspective_trans(undist, src, dst)
-    #draw_lines(tr_img, dst)
+    # Trying RGB Color layers
+    '''
+    HSV = cv2.cvtColor(undist, cv2.COLOR_RGB2HSV)
 
+    # For yellow
+    yellow = cv2.inRange(HSV, (20, 100, 100), (50, 255, 255))
+    saveImage(yellow, 'images/image18.png')
+
+    # For white
+    sensitivity_1 = 68
+    white = cv2.inRange(HSV, (0, 0, 255 - sensitivity_1), (255, 20, 255))
+    saveImage(white, 'images/image19.png')
+
+    sensitivity_2 = 60
+    HSL = cv2.cvtColor(undist, cv2.COLOR_RGB2HLS)
+    white_2 = cv2.inRange(HSL, (0, 255 - sensitivity_2, 0), (255, 255, sensitivity_2))
+    saveImage(white_2, 'images/image20.png')
+    white_3 = cv2.inRange(undist, (200, 200, 200), (255, 255, 255))
+    saveImage(white_3, 'images/image21.png')
+
+    color_combined = s_binary | yellow | white | white_2 | white_3
+    color_combined = region_of_interest(color_combined, vertices)
+    saveImage(color_combined, 'images/image22.png')
+    '''
+
+    line_undist = draw_lines(undist, src)
+    saveImage(line_undist, 'images/image13.png')
+    tr_img = perspective_trans(undist, src, dst)
+    line_warped = draw_lines(tr_img, dst)
+    saveImage(line_warped, 'images/image14.png')
+
+    saveImage(color_combined, 'images/image15.png')
 
     transformed = perspective_trans(color_combined, src, dst)
-    #print_Image(combined)
-    print_Image(transformed, 'Trans')
+    saveImage(transformed, 'images/image16.png')
+
     #hist(transformed)
-    #global left_fit, right_fit
-    left_fitx, right_fitx, ploty, left_fit, right_fit, l, r = find_lane_lines(transformed)
-    print(left_fitx)
-    final = draw_on_original_image(undist, left_fitx, right_fitx, ploty, src, dst)
+
+    left_fitx, right_fitx, ploty, left_fit, right_fit, l, r, d = sliding_windows(transformed)
+
+    final = draw_on_original_image(undist, left_fitx, right_fitx, ploty, src, dst, l, r, d)
+    saveImage(final, 'images/image17.png')
     print_Image(final,' Final')
 
-    '''
-    '''
     output = 'output.mp4'
     clip1 = VideoFileClip("project_video.mp4")
     # clip1 = VideoFileClip("challenge.mp4")
     clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     clip.write_videofile(output, audio=False)
-    '''
+
 
 
 
