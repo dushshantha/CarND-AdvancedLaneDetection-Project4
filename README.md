@@ -190,7 +190,5 @@ The process_image(image) function ( Lines 450 - 509) organizes all the steps i m
 ---
 
 ### Discussion
-
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
-
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+ * I had to adjust the Parameters like the Src points, kernel, Thresholds to get to the acceptable result. The result of new videos change depending on how these parameters are adjusted.
+ * There are some locations in the road that was not clearly identified by the line detection due to the color and lighting changes. I would like to experiement with different color spaces and see what works the best. 
