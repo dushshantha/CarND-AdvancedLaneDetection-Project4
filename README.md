@@ -169,6 +169,12 @@ I used the Sliding Window method described in  the lessons to identify the lane 
 
 I also uses a class called Line to save the data from above function for each image so i can skip the blind search where there is a lane detected in the previous frame. In this case I use skip_sliding_windows(binary_warped) function ( Lines 375 - 428) to look at the 100 pixel area from the last line detcted. This increase the performance of the algorythm significantly. 
 
+Update for review 1:
+
+I added a similarity of the polygon check to the sliding_windows function and also used smoothing using the average fit of polygon over last 10 iterations. This time the video seems more smoother than last time and polygods and more accurate (Lines 359 - 383)
+
+I also added changes to the Curvature function to correct the curvature. Now I can see the acceptable curvature is returning. (Line 266)
+
 
 #### 6. Draw the lane lines on the original image
 
@@ -184,7 +190,7 @@ Below example shows the resulting image with the highlighted lane.
 
 The process_image(image) function ( Lines 450 - 509) organizes all the steps i mentioned in the previous section in to a function and used to process every frame of the video. Below is the link to the resulting Video.
 
-[https://youtu.be/EJdIoCBbIqg](https://youtu.be/EJdIoCBbIqg)
+[https://www.youtube.com/watch?v=HYqhpUGUjqc](https://www.youtube.com/watch?v=HYqhpUGUjqc)
 
 
 ---
