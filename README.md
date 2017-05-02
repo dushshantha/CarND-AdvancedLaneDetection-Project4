@@ -184,6 +184,8 @@ Below example shows the resulting image with the highlighted lane.
 
 The process_image(image) function ( Lines 450 - 509) organizes all the steps i mentioned in the previous section in to a function and used to process every frame of the video. Below is the link to the resulting Video.
 
+[https://youtu.be/EJdIoCBbIqg](https://youtu.be/EJdIoCBbIqg)
+
 
 ---
 
